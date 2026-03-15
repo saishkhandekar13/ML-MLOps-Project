@@ -1,6 +1,12 @@
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
+=======
+# ---> Python
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+>>>>>>> be30435a87233f088ef997406f47a175ebced4f1
 *$py.class
 
 # C extensions
@@ -8,6 +14,9 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+=======
+env/
+>>>>>>> be30435a87233f088ef997406f47a175ebced4f1
 build/
 develop-eggs/
 dist/
@@ -19,12 +28,17 @@ lib64/
 parts/
 sdist/
 var/
+<<<<<<< HEAD
 wheels/
 share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
 MANIFEST
+=======
+*.egg-info/
+.installed.cfg
+*.egg
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -39,17 +53,22 @@ pip-delete-this-directory.txt
 # Unit test / coverage reports
 htmlcov/
 .tox/
+<<<<<<< HEAD
 .nox/
+=======
 .coverage
 .coverage.*
 .cache
 nosetests.xml
 coverage.xml
+<<<<<<< HEAD
 *.cover
 *.py.cover
 .hypothesis/
 .pytest_cache/
 cover/
+=======
+*,cover
 
 # Translations
 *.mo
@@ -57,6 +76,7 @@ cover/
 
 # Django stuff:
 *.log
+<<<<<<< HEAD
 local_settings.py
 db.sqlite3
 db.sqlite3-journal
@@ -67,11 +87,13 @@ instance/
 
 # Scrapy stuff:
 .scrapy
+=======
 
 # Sphinx documentation
 docs/_build/
 
 # PyBuilder
+<<<<<<< HEAD
 .pybuilder/
 target/
 
@@ -205,3 +227,14 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+=======
+target/
+
+__pycache__/
+*.pyc
+*.pkl
+mlruns/
+data/raw/*.csv
+data/interim/*.csv
+.env
+
