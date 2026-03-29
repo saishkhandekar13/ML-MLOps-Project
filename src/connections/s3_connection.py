@@ -1,6 +1,6 @@
 import boto3
 import pandas as pd
-import logging
+# import logging commented due to it can happen conflict
 from src.logger import logging
 from io import StringIO
 

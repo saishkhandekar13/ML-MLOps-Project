@@ -12,7 +12,7 @@ from src.logger import logging
 nltk.download('wordnet')
 nltk.download('stopwords')
 
-def preprocess_dataframe(df, col='text'):
+def preprocess_dataframe(df, col='review'):
     """
     Preprocess a DataFrame by applying text preprocessing to a specific column.
 

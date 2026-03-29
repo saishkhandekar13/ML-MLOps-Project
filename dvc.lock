@@ -23,28 +23,28 @@ stages:
     deps:
     - path: data/processed
       hash: md5
-      md5: 2a73ec71458ace2f79c422e4c5c7711d.dir
-      size: 10022010
+      md5: e743e4889b49f07305a827e95c3abb56.dir
+      size: 20272397
       nfiles: 4
     - path: src/features/feature_engineering.py
       hash: md5
-      md5: becb1ca06f27577ad6632e061bd3e290
-      size: 3446
+      md5: cf6c768a40076dcc18d2299c2c308e1f
+      size: 3509
     params:
       params.yaml:
         feature_engineering.max_features: 10000
     outs:
     - path: models/vectorizer.pkl
       hash: md5
-      md5: 408742179e9884daba3d3434f4165159
-      size: 238282
+      md5: 43355d750eacc88e8858f6fcd114c349
+      size: 314817
   model_building:
     cmd: python src/model/model_building.py
     deps:
     - path: data/processed
       hash: md5
-      md5: 2a73ec71458ace2f79c422e4c5c7711d.dir
-      size: 10022010
+      md5: e743e4889b49f07305a827e95c3abb56.dir
+      size: 20272397
       nfiles: 4
     - path: src/model/model_building.py
       hash: md5
@@ -53,14 +53,14 @@ stages:
     outs:
     - path: models/model.pkl
       hash: md5
-      md5: 9197b54f34bdd00c4f29f48653a2b30c
+      md5: c12504ba0c2a96e0d4a2156e174f2eca
       size: 77013
   model_evaluation:
     cmd: python src/model/model_evaluation.py
     deps:
     - path: models/model.pkl
       hash: md5
-      md5: 9197b54f34bdd00c4f29f48653a2b30c
+      md5: c12504ba0c2a96e0d4a2156e174f2eca
       size: 77013
     - path: src/model/model_evaluation.py
       hash: md5
@@ -69,18 +69,18 @@ stages:
     outs:
     - path: reports/experiment_info.json
       hash: md5
-      md5: 88740bc2636b1f51a7914258d0bff95d
+      md5: 5c7bf1cc5f192bbacbd20f8cbb034c09
       size: 82
     - path: reports/metrics.json
       hash: md5
-      md5: 995262c19edb2c9270fcb4d121935256
-      size: 105
+      md5: e06cd450e09fa436f356fd324f5d41d8
+      size: 90
   model_registration:
     cmd: python src/model/register_model.py
     deps:
     - path: reports/experiment_info.json
       hash: md5
-      md5: 88740bc2636b1f51a7914258d0bff95d
+      md5: 5c7bf1cc5f192bbacbd20f8cbb034c09
       size: 82
     - path: src/model/register_model.py
       hash: md5
