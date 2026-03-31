@@ -238,4 +238,3 @@ data/raw/*.csv
 data/interim/*.csv
 .env
 
-models/

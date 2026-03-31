@@ -23,64 +23,64 @@ stages:
     deps:
     - path: data/processed
       hash: md5
-      md5: e743e4889b49f07305a827e95c3abb56.dir
-      size: 20272397
+      md5: c6afaef4b3266ebd05f93c94b6a957ff.dir
+      size: 41458434
       nfiles: 4
     - path: src/features/feature_engineering.py
       hash: md5
-      md5: cf6c768a40076dcc18d2299c2c308e1f
-      size: 3509
+      md5: 85b20caf7b683abd1a685e4c180f8fa7
+      size: 1650
     params:
       params.yaml:
-        feature_engineering.max_features: 10000
+        feature_engineering.max_features: 20000
     outs:
     - path: models/vectorizer.pkl
       hash: md5
-      md5: 43355d750eacc88e8858f6fcd114c349
-      size: 314817
+      md5: c1aaa1691a80bf9baca7694a98856087
+      size: 739562
   model_building:
     cmd: python src/model/model_building.py
     deps:
     - path: data/processed
       hash: md5
-      md5: e743e4889b49f07305a827e95c3abb56.dir
-      size: 20272397
+      md5: c6afaef4b3266ebd05f93c94b6a957ff.dir
+      size: 41458434
       nfiles: 4
     - path: src/model/model_building.py
       hash: md5
-      md5: 0147f56dbbab9cf1065b67f3cf72e473
-      size: 1859
+      md5: 365470af63085331053562d8943a0098
+      size: 1123
     outs:
     - path: models/model.pkl
       hash: md5
-      md5: c12504ba0c2a96e0d4a2156e174f2eca
-      size: 77013
+      md5: 71a08c33544662b83efe7eda763b4f66
+      size: 160739
   model_evaluation:
     cmd: python src/model/model_evaluation.py
     deps:
     - path: models/model.pkl
       hash: md5
-      md5: c12504ba0c2a96e0d4a2156e174f2eca
-      size: 77013
+      md5: 71a08c33544662b83efe7eda763b4f66
+      size: 160739
     - path: src/model/model_evaluation.py
       hash: md5
-      md5: 9c9eb023dfa3f3802c818c1d457cfb10
-      size: 5568
+      md5: b8ef9a73b8c9e59f98cc0a97e392aab3
+      size: 3615
     outs:
     - path: reports/experiment_info.json
       hash: md5
-      md5: 5c7bf1cc5f192bbacbd20f8cbb034c09
+      md5: 70016629ad7d62d8270f142cd8d1eca0
       size: 82
     - path: reports/metrics.json
       hash: md5
-      md5: e06cd450e09fa436f356fd324f5d41d8
-      size: 90
+      md5: d09a6f35f91c20f9c9bddd67c13f2235
+      size: 92
   model_registration:
     cmd: python src/model/register_model.py
     deps:
     - path: reports/experiment_info.json
       hash: md5
-      md5: 5c7bf1cc5f192bbacbd20f8cbb034c09
+      md5: 70016629ad7d62d8270f142cd8d1eca0
       size: 82
     - path: src/model/register_model.py
       hash: md5

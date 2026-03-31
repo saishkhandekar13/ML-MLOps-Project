@@ -16,67 +16,43 @@ import warnings
 warnings.simplefilter("ignore", UserWarning)
 warnings.filterwarnings("ignore")
 
-def lemmatization(text):
-    """Lemmatize the text."""
-    lemmatizer = WordNetLemmatizer()
-    text = text.split()
-    text = [lemmatizer.lemmatize(word) for word in text]
-    return " ".join(text)
+# ------------------------------------------------------------------------------------------
+# TEXT PREPROCESSING (MATCHED WITH PIPELINE)
+# ------------------------------------------------------------------------------------------
 
-def remove_stop_words(text):
-    """Remove stop words from the text."""
-    stop_words = set(stopwords.words("english"))
-    text = [word for word in str(text).split() if word not in stop_words]
-    return " ".join(text)
+lemmatizer = WordNetLemmatizer()
+stop_words = set(stopwords.words("english"))
+
+def removing_urls(text):
+    return re.sub(r'https?://\S+|www\.\S+', '', text)
 
 def removing_numbers(text):
-    """Remove numbers from the text."""
-    text = ''.join([char for char in text if not char.isdigit()])
-    return text
-
-def lower_case(text):
-    """Convert text to lower case."""
-    text = text.split()
-    text = [word.lower() for word in text]
-    return " ".join(text)
+    return ''.join([char for char in text if not char.isdigit()])
 
 def removing_punctuations(text):
-    """Remove punctuations from the text."""
     text = re.sub('[%s]' % re.escape(string.punctuation), ' ', text)
-    text = text.replace('؛', "")
     text = re.sub('\s+', ' ', text).strip()
     return text
 
-def removing_urls(text):
-    """Remove URLs from the text."""
-    url_pattern = re.compile(r'https?://\S+|www\.\S+')
-    return url_pattern.sub(r'', text)
+def remove_stop_words(text):
+    return " ".join([word for word in text.split() if word not in stop_words])
 
-def remove_small_sentences(df):
-    """Remove sentences with less than 3 words."""
-    for i in range(len(df)):
-        if len(df.text.iloc[i].split()) < 3:
-            df.text.iloc[i] = np.nan
+def lemmatization(text):
+    return " ".join([lemmatizer.lemmatize(word) for word in text.split()])
 
 def normalize_text(text):
-    text = lower_case(text)
-    text = remove_stop_words(text)
+    text = text.lower()
+    text = removing_urls(text)
     text = removing_numbers(text)
     text = removing_punctuations(text)
-    text = removing_urls(text)
+    text = remove_stop_words(text)
     text = lemmatization(text)
-
     return text
 
-# Below code block is for local use
-# -------------------------------------------------------------------------------------
-# mlflow.set_tracking_uri('https://dagshub.com/saishkhandekar13/Sentiment-Analysis-MLOps-Project.mlflow')
-# dagshub.init(repo_owner='saishkhandekar13', repo_name='Sentiment-Analysis-MLOps-Project', mlflow=True)
-# -------------------------------------------------------------------------------------
+# ------------------------------------------------------------------------------------------
+# DAGSHUB + MLFLOW SETUP (PRODUCTION)
+# ------------------------------------------------------------------------------------------
 
-# Below code block is for production use
-# -------------------------------------------------------------------------------------
-# Set up DagsHub credentials for MLflow tracking
 dagshub_token = os.getenv("CAPSTONE_TEST")
 if not dagshub_token:
     raise EnvironmentError("CAPSTONE_TEST environment variable is not set")
@@ -86,51 +62,61 @@ os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
 
 dagshub_url = "https://dagshub.com"
 repo_owner = "saishkhandekar13"
-repo_name = "Sentiment-Analysis-MLOps-Project"
-# Set up MLflow tracking URI
+repo_name = "ML-MLOps-Project"   # ✅ FIXED
+
 mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
-# -------------------------------------------------------------------------------------
 
+# ------------------------------------------------------------------------------------------
+# FLASK APP INITIALIZATION
+# ------------------------------------------------------------------------------------------
 
-# Initialize Flask app
 app = Flask(__name__)
 
-# from prometheus_client import CollectorRegistry
+# ------------------------------------------------------------------------------------------
+# PROMETHEUS METRICS
+# ------------------------------------------------------------------------------------------
 
-# Create a custom registry
 registry = CollectorRegistry()
 
-# Define your custom metrics using this registry
 REQUEST_COUNT = Counter(
-    "app_request_count", "Total number of requests to the app", ["method", "endpoint"], registry=registry
+    "app_request_count", "Total number of requests", ["method", "endpoint"], registry=registry
 )
+
 REQUEST_LATENCY = Histogram(
-    "app_request_latency_seconds", "Latency of requests in seconds", ["endpoint"], registry=registry
+    "app_request_latency_seconds", "Request latency", ["endpoint"], registry=registry
 )
+
 PREDICTION_COUNT = Counter(
-    "model_prediction_count", "Count of predictions for each class", ["prediction"], registry=registry
+    "model_prediction_count", "Prediction count", ["prediction"], registry=registry
 )
 
 # ------------------------------------------------------------------------------------------
-# Model and vectorizer setup
+# MODEL + VECTORIZER LOADING
 # ------------------------------------------------------------------------------------------
-# Model and vectorizer setup
 
-model_uri = "models:/my_model/latest"
-print(f"Fetching model from: {model_uri}")
+model_name = "my_model"
+model_uri = f"models:/{model_name}/latest"
 
+print(f"Loading model from: {model_uri}")
 model = mlflow.pyfunc.load_model(model_uri)
 
-vectorizer = pickle.load(open('models/vectorizer.pkl', 'rb'))
+vectorizer_path = os.path.join("models", "vectorizer.pkl")
+vectorizer = pickle.load(open(vectorizer_path, 'rb'))
 
-# Routes
+# ------------------------------------------------------------------------------------------
+# ROUTES
+# ------------------------------------------------------------------------------------------
+
 @app.route("/")
 def home():
     REQUEST_COUNT.labels(method="GET", endpoint="/").inc()
     start_time = time.time()
+
     response = render_template("index.html", result=None)
+
     REQUEST_LATENCY.labels(endpoint="/").observe(time.time() - start_time)
     return response
+
 
 @app.route("/predict", methods=["POST"])
 def predict():
@@ -138,29 +124,32 @@ def predict():
     start_time = time.time()
 
     text = request.form["text"]
-    # Clean text
+
+    # ✅ Preprocess
     text = normalize_text(text)
-    # Convert to features
+
+    # ✅ Vectorize
     features = vectorizer.transform([text])
-    features_df = pd.DataFrame(features.toarray(), columns=[str(i) for i in range(features.shape[1])])
+    features_df = pd.DataFrame(features.toarray())
 
-    # Predict
-    result = model.predict(features_df)
-    prediction = result[0]
+    # ✅ Predict
+    prediction = model.predict(features_df)[0]
 
-    # Increment prediction count metric
+    # Metrics
     PREDICTION_COUNT.labels(prediction=str(prediction)).inc()
-
-    # Measure latency
     REQUEST_LATENCY.labels(endpoint="/predict").observe(time.time() - start_time)
 
     return render_template("index.html", result=prediction)
 
+
 @app.route("/metrics", methods=["GET"])
 def metrics():
-    """Expose only custom Prometheus metrics."""
     return generate_latest(registry), 200, {"Content-Type": CONTENT_TYPE_LATEST}
 
+
+# ------------------------------------------------------------------------------------------
+# RUN APP
+# ------------------------------------------------------------------------------------------
+
 if __name__ == "__main__":
-    # app.run(debug=True) # for local use
-    app.run(debug=True, host="0.0.0.0", port=5000)  # Accessible from outside Docker
+    app.run(debug=True, host="0.0.0.0", port=5000)
