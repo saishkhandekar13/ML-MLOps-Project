@@ -75,7 +75,7 @@ def save_metrics(metrics, path):
 def save_model_info(run_id, path):
     info = {
         "run_id": run_id,
-        "model_path": "model"
+        "model_path": "logistic_regression_model"
     }
     with open(path, "w") as f:
         json.dump(info, f, indent=4)

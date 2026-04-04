@@ -17,11 +17,9 @@ if not dagshub_token:
 os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
 os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
 
-dagshub_url = "https://dagshub.com"
-repo_owner = "saishkhandekar13"
-repo_name = "ML-MLOps-Project"
-
-mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
+mlflow.set_tracking_uri(
+    "https://dagshub.com/saishkhandekar13/ML-MLOps-Project.mlflow"
+)
 
 
 # ================= Load =================
@@ -32,44 +30,38 @@ def load_model_info(file_path: str) -> dict:
     return model_info
 
 
-# ================= Register =================
-def register_model(model_name: str, model_uri: str):
-    try:
-        model_version = mlflow.register_model(model_uri, model_name)
-
-        client = mlflow.tracking.MlflowClient()
-        client.transition_model_version_stage(
-            name=model_name,
-            version=model_version.version,
-            stage="Staging"
-        )
-
-        logging.info(f'{model_name} registered successfully')
-
-    except Exception as e:
-        logging.error('Error during model registration: %s', e)
-        raise
-
-
 # ================= Main =================
 def main():
     try:
         model_info = load_model_info('reports/experiment_info.json')
         run_id = model_info["run_id"]
 
-        # 🔥 Register BOTH models
-        models = {
-            "logistic_model": "logistic_regression_model",
-            "svm_model": "svm_model"
-        }
+        # 🔥 MUST MATCH model_evaluation logging name
+        artifact_path = "logistic_regression_model"
 
-        for model_name, artifact_path in models.items():
-            model_uri = f"runs:/{run_id}/{artifact_path}"
-            register_model(model_name, model_uri)
+        model_uri = f"runs:/{run_id}/{artifact_path}"
+        model_name = "my_model"
+
+        print(f"Registering model from: {model_uri}")
+
+        # Register model
+        model_version = mlflow.register_model(model_uri, model_name)
+
+        client = mlflow.tracking.MlflowClient()
+
+        # 🔥 Move to Production (CRITICAL FOR TEST)
+        client.transition_model_version_stage(
+            name=model_name,
+            version=model_version.version,
+            stage="Production"
+        )
+
+        print(f"✅ Model '{model_name}' version {model_version.version} is now in PRODUCTION")
 
     except Exception as e:
         logging.error('Failed to complete model registration: %s', e)
         print(f"Error: {e}")
+        raise
 
 
 if __name__ == '__main__':
