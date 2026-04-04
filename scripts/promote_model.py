@@ -1,5 +1,3 @@
-# promote_model.py
-
 import os
 import mlflow
 from mlflow.tracking import MlflowClient
@@ -15,48 +13,44 @@ def promote_model():
         os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
         os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
 
-        dagshub_url = "https://dagshub.com"
-        repo_owner = "saishkhandekar13"
-        repo_name = "ML-MLOps-Project"   # ✅ UPDATED
-
-        mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
+        mlflow.set_tracking_uri(
+            "https://dagshub.com/saishkhandekar13/ML-MLOps-Project.mlflow"
+        )
 
         client = MlflowClient()
 
         model_name = "my_model"
 
-        # ================= Get Staging Model =================
-        staging_versions = client.get_latest_versions(model_name, stages=["Staging"])
+        # ================= Get All Versions =================
+        versions = client.get_latest_versions(model_name)
 
-        if not staging_versions:
-            raise Exception("No model found in STAGING stage")
+        if not versions:
+            raise Exception("No model versions found")
 
-        latest_staging_version = staging_versions[0].version
+        # 👉 Get latest version (highest version number)
+        latest_version = max(versions, key=lambda v: int(v.version)).version
 
-        print(f"Found Staging Model Version: {latest_staging_version}")
+        print(f"Latest Model Version Found: {latest_version}")
 
         # ================= Archive Existing Production =================
-        prod_versions = client.get_latest_versions(model_name, stages=["Production"])
+        prod_versions = [v for v in versions if v.current_stage == "Production"]
 
-        if prod_versions:
-            for version in prod_versions:
-                client.transition_model_version_stage(
-                    name=model_name,
-                    version=version.version,
-                    stage="Archived"
-                )
-                print(f"Archived Production Model Version: {version.version}")
-        else:
-            print("No existing Production model found")
+        for version in prod_versions:
+            client.transition_model_version_stage(
+                name=model_name,
+                version=version.version,
+                stage="Archived"
+            )
+            print(f"Archived old Production model: {version.version}")
 
-        # ================= Promote New Model =================
+        # ================= Promote Latest to Production =================
         client.transition_model_version_stage(
             name=model_name,
-            version=latest_staging_version,
+            version=latest_version,
             stage="Production"
         )
 
-        print(f"✅ Model version {latest_staging_version} promoted to PRODUCTION")
+        print(f"✅ Model version {latest_version} promoted to PRODUCTION")
 
     except Exception as e:
         print(f"❌ Error in model promotion: {e}")

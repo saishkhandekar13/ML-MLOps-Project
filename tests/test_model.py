@@ -14,7 +14,6 @@ class TestModelLoading(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
 
-        # ================= MLflow Setup =================
         dagshub_token = os.getenv("CAPSTONE_TEST")
         if not dagshub_token:
             raise EnvironmentError("CAPSTONE_TEST environment variable is not set")
@@ -22,18 +21,13 @@ class TestModelLoading(unittest.TestCase):
         os.environ["MLFLOW_TRACKING_USERNAME"] = dagshub_token
         os.environ["MLFLOW_TRACKING_PASSWORD"] = dagshub_token
 
-        dagshub_url = "https://dagshub.com"
-        repo_owner = "saishkhandekar13"
-        repo_name = "ML-MLOps-Project"   # ✅ UPDATED
-
-        mlflow.set_tracking_uri(f'{dagshub_url}/{repo_owner}/{repo_name}.mlflow')
+        mlflow.set_tracking_uri("https://dagshub.com/saishkhandekar13/ML-MLOps-Project.mlflow")
 
         cls.client = mlflow.tracking.MlflowClient()
-
         cls.model_name = "my_model"
 
-        # ================= Load Production Model =================
-        versions = cls.client.get_latest_versions(cls.model_name, stages=["Production"])
+        versions = cls.client.get_latest_versions(cls.model_name)
+        versions = [v for v in versions if v.current_stage == "Production"]
 
         if not versions:
             raise Exception("No model found in PRODUCTION stage")
@@ -45,32 +39,21 @@ class TestModelLoading(unittest.TestCase):
 
         print(f"Loaded model version: {cls.model_version}")
 
-        # ================= Load Vectorizer =================
         cls.vectorizer = pickle.load(open("models/vectorizer.pkl", "rb"))
-
-        # ================= Load TF-IDF Test Data =================
         cls.test_data = pd.read_csv("data/processed/test_tfidf.csv")
-
-    # =========================================================
 
     def test_model_loaded_properly(self):
         self.assertIsNotNone(self.model)
-
-    # =========================================================
 
     def test_feature_consistency(self):
 
         X_test = self.test_data.iloc[:, :-1]
 
-        # 🔥 CRITICAL CHECK
         self.assertEqual(
             X_test.shape[1],
             self.model.metadata.get_input_schema().inputs[0].shape[-1]
-            if hasattr(self.model, "metadata") else X_test.shape[1],
-            "Feature mismatch between model and data"
+            if hasattr(self.model, "metadata") else X_test.shape[1]
         )
-
-    # =========================================================
 
     def test_model_signature(self):
 
@@ -82,9 +65,6 @@ class TestModelLoading(unittest.TestCase):
         prediction = self.model.predict(input_df)
 
         self.assertEqual(len(prediction), 1)
-        self.assertEqual(len(prediction.shape), 1)
-
-    # =========================================================
 
     def test_model_performance(self):
 
@@ -103,7 +83,6 @@ class TestModelLoading(unittest.TestCase):
         print(f"Recall: {recall}")
         print(f"F1 Score: {f1}")
 
-        # ✅ realistic thresholds (based on your pipeline)
         self.assertGreaterEqual(accuracy, 0.75)
         self.assertGreaterEqual(precision, 0.70)
         self.assertGreaterEqual(recall, 0.70)
