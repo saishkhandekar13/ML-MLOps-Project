@@ -4,7 +4,7 @@ import pickle
 import json
 import os
 
-from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score
+from sklearn.metrics import accuracy_score, precision_score, recall_score, roc_auc_score, f1_score
 
 import mlflow
 import mlflow.sklearn
@@ -51,12 +51,13 @@ def evaluate_model(model, X_test, y_test):
         y_prob = model.predict_proba(X_test)[:, 1]
         auc = roc_auc_score(y_test, y_prob)
     else:
-        auc = roc_auc_score(y_test, y_pred)
+        auc = None
 
     metrics = {
         "accuracy": accuracy_score(y_test, y_pred),
         "precision": precision_score(y_test, y_pred),
         "recall": recall_score(y_test, y_pred),
+        "f1_score": f1_score(y_test, y_pred),
         "auc": auc
     }
 
@@ -87,41 +88,57 @@ def main():
 
     with mlflow.start_run() as run:
 
-        # Load correct model + TFIDF data
-        model = load_model("models/model.pkl")
+        # 🔥 Load BOTH models
+        models = {
+            "logistic_regression": load_model("models/logistic_model.pkl"),
+            "svm": load_model("models/svm_model.pkl")
+        }
+
         test_data = load_data("data/processed/test_tfidf.csv")
 
         X_test = test_data.iloc[:, :-1].values
         y_test = test_data.iloc[:, -1].values
 
-        # 🚨 IMPORTANT CHECK (prevents your error forever)
-        if X_test.shape[1] != model.n_features_in_:
-            raise ValueError(
-                f"Feature mismatch: Data has {X_test.shape[1]} features, "
-                f"model expects {model.n_features_in_}"
+        all_metrics = {}
+
+        # 🔥 Evaluate each model
+        for name, model in models.items():
+
+            print(f"\nEvaluating {name}...")
+
+            # Feature consistency check
+            if X_test.shape[1] != model.n_features_in_:
+                raise ValueError(
+                    f"{name}: Feature mismatch: Data has {X_test.shape[1]} features, "
+                    f"model expects {model.n_features_in_}"
+                )
+
+            metrics = evaluate_model(model, X_test, y_test)
+
+            all_metrics[name] = metrics
+
+            # Log metrics (skip None values)
+            mlflow.log_metrics({
+                f"{name}_{k}": v for k, v in metrics.items() if v is not None
+            })
+
+            # Log parameters
+            if hasattr(model, "get_params"):
+                mlflow.log_params({
+                    f"{name}_{k}": v for k, v in model.get_params().items()
+                })
+
+            # Log model
+            mlflow.sklearn.log_model(
+                model,
+                f"{name}_model",
+                input_example=X_test[:5]
             )
 
-        # Evaluate
-        metrics = evaluate_model(model, X_test, y_test)
+        # Save all metrics
+        save_metrics(all_metrics, "reports/metrics.json")
 
-        # Save metrics
-        save_metrics(metrics, "reports/metrics.json")
-
-        # Log metrics
-        mlflow.log_metrics(metrics)
-
-        # Log params
-        if hasattr(model, "get_params"):
-            mlflow.log_params(model.get_params())
-
-        # ✅ CRITICAL FIX: log model with input example
-        mlflow.sklearn.log_model(
-            model,
-            "model",
-            input_example=X_test[:5]
-        )
-
-        # Save model info
+        # Save run info
         save_model_info(run.info.run_id, "reports/experiment_info.json")
 
         mlflow.log_artifact("reports/metrics.json")

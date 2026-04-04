@@ -4,6 +4,7 @@ import pickle
 import os
 
 from sklearn.linear_model import LogisticRegression
+from sklearn.svm import LinearSVC
 from src.logger import logging
 
 
@@ -15,18 +16,26 @@ def load_data(file_path: str) -> pd.DataFrame:
 
 def train_model(X_train, y_train):
 
-    model = LogisticRegression(
-        C=0.1,
-        solver='lbfgs',
-        penalty='l2',
-        class_weight='balanced',
-        max_iter=3000
-    )
+    models = {
+        "logistic_regression": LogisticRegression(
+            C=2,
+            solver='saga',
+            n_jobs=-1,
+            max_iter=1500
+        ),
+        "svm": LinearSVC(C=1.5)
+    }
 
-    model.fit(X_train, y_train)
+    trained_models = {}
+
+    for name, m in models.items():
+        m.fit(X_train, y_train)
+        print(f"{name} trained")
+        trained_models[name] = m
+
     logging.info("Model training completed")
 
-    return model
+    return trained_models
 
 
 def save_model(model, file_path: str):
@@ -42,9 +51,11 @@ def main():
     X_train = train_data.iloc[:, :-1].values
     y_train = train_data.iloc[:, -1].values
 
-    model = train_model(X_train, y_train)
+    models = train_model(X_train, y_train)
 
-    save_model(model, 'models/model.pkl')
+    # Save both models separately
+    save_model(models["logistic_regression"], 'models/logistic_model.pkl')
+    save_model(models["svm"], 'models/svm_model.pkl')
 
 
 if __name__ == "__main__":

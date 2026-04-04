@@ -25,12 +25,14 @@ def preprocess_dataframe(df, col='review'):
     """
     # Initialize lemmatizer and stopwords
     lemmatizer = WordNetLemmatizer()
-    stop_words = set(stopwords.words("english"))
+    stop_words = set(stopwords.words("english")) - {'not','no'}
 
     def preprocess_text(text):
         """Helper function to preprocess a single text string."""
         # Remove URLs
         text = re.sub(r'https?://\S+|www\.\S+', '', text)
+        # handling html tags
+        text = re.sub(r'<.*?>', '', text)
         # Remove numbers
         text = ''.join([char for char in text if not char.isdigit()])
         # Convert to lowercase
@@ -49,7 +51,7 @@ def preprocess_dataframe(df, col='review'):
     df[col] = df[col].apply(preprocess_text)
 
     # Remove small sentences (less than 3 words)
-    # df[col] = df[col].apply(lambda x: np.nan if len(str(x).split()) < 3 else x)
+    df[col] = df[col].apply(lambda x: np.nan if len(str(x).split()) < 3 else x)
 
     # Drop rows with NaN values
     df = df.dropna(subset=[col])

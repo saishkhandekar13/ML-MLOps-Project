@@ -17,9 +17,13 @@ def apply_tfidf(train_data, test_data):
     logging.info("Applying TF-IDF...")
 
     vectorizer = TfidfVectorizer(
-        max_features=20000,
+        max_features=10000,
         ngram_range=(1, 2),
-        stop_words='english'
+        stop_words='english',
+        # *** added extra for optimization ***
+        min_df=2,
+        sublinear_tf=True,
+        dtype=np.float32
     )
 
     X_train = train_data['review'].values
@@ -31,10 +35,10 @@ def apply_tfidf(train_data, test_data):
     X_test_vec = vectorizer.transform(X_test)
 
     train_df = pd.DataFrame(X_train_vec.toarray())
-    train_df['label'] = y_train
+    train_df['sentiment'] = y_train
 
     test_df = pd.DataFrame(X_test_vec.toarray())
-    test_df['label'] = y_test
+    test_df['sentiment'] = y_test
 
     os.makedirs("models", exist_ok=True)
     pickle.dump(vectorizer, open('models/vectorizer.pkl', 'wb'))
@@ -45,8 +49,10 @@ def apply_tfidf(train_data, test_data):
 
 
 def main():
-    train_data = load_data('./data/interim/train_processed.csv')
-    test_data = load_data('./data/interim/test_processed.csv')
+    train_data = load_data('./data/processed/train_processed.csv')
+    test_data = load_data('./data/processed/test_processed.csv')
+    #train_data = load_data('./data/interim/train_processed.csv')
+    #test_data = load_data('./data/interim/test_processed.csv')
 
     train_df, test_df = apply_tfidf(train_data, test_data)
 
