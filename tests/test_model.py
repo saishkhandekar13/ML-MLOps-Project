@@ -39,7 +39,8 @@ class TestModelLoading(unittest.TestCase):
 
         print(f"Loaded model version: {cls.model_version}")
 
-        cls.vectorizer = pickle.load(open("models/vectorizer.pkl", "rb"))
+        with open("models/vectorizer.pkl", "rb") as f:
+            cls.vectorizer = pickle.load(f)
         cls.test_data = pd.read_csv("data/processed/test_tfidf.csv")
 
     def test_model_loaded_properly(self):
@@ -60,7 +61,7 @@ class TestModelLoading(unittest.TestCase):
         input_text = "this movie is amazing"
 
         features = self.vectorizer.transform([input_text])
-        input_df = pd.DataFrame(features.toarray())
+        input_df = pd.DataFrame(features.toarray().astype("float64"))
 
         prediction = self.model.predict(input_df)
 
