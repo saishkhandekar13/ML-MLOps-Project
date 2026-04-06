@@ -101,7 +101,8 @@ print(f"Loading model from: {model_uri}")
 model = mlflow.pyfunc.load_model(model_uri)
 
 vectorizer_path = os.path.join("models", "vectorizer.pkl")
-vectorizer = pickle.load(open(vectorizer_path, 'rb'))
+with open(vectorizer_path, 'rb') as f:
+    vectorizer = pickle.load(f)
 
 # ------------------------------------------------------------------------------------------
 # ROUTES
@@ -130,7 +131,7 @@ def predict():
 
     # ✅ Vectorize
     features = vectorizer.transform([text])
-    features_df = pd.DataFrame(features.toarray())
+    features_df = pd.DataFrame(features.toarray().astype("float64"))
 
     # ✅ Predict
     prediction = model.predict(features_df)[0]
