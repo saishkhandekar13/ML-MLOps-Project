@@ -6,7 +6,7 @@ WORKDIR /app
 COPY flask_app/ /app/
 
 # Copy model artifacts
-COPY models/model.pkl /app/models/model.pkl
+COPY models/logistic_model.pkl /app/models/logistic_model.pkl
 COPY models/vectorizer.pkl /app/models/vectorizer.pkl
 
 # Copy dependencies file
