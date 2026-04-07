@@ -94,11 +94,11 @@ PREDICTION_COUNT = Counter(
 # MODEL + VECTORIZER LOADING
 # ------------------------------------------------------------------------------------------
 
-model_name = "my_model"
-model_uri = f"models:/{model_name}/latest"
 
-print(f"Loading model from: {model_uri}")
-model = mlflow.pyfunc.load_model(model_uri)
+model_path = os.path.join("models", "model.pkl")
+
+with open(model_path, "rb") as f:
+    model = pickle.load(f)
 
 vectorizer_path = os.path.join("models", "vectorizer.pkl")
 with open(vectorizer_path, 'rb') as f:

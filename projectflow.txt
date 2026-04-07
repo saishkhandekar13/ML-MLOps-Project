@@ -50,7 +50,7 @@ dvc remote add -d myremote s3://mlops-sentiment-analysis-saish
 31. Add .github/workflows/ci.yaml file
 
 32. Create key token on Dagshub for auth: Go to dagshub repo > Your settings > Tokens > Generate new token
-    >> Please make sure to save token << >> Sentiment Analysis: fed5090d7b66ee0a53ff807d075e977abf0acba2<<
+    >> Please make sure to save token << >> ML-MLOps-Project: c9345c4f480e6f910aa74c772b5615846c75ef22 <<
     >> Add this auth token to github secret&var and update on ci file
 
 
@@ -64,7 +64,7 @@ dvc remote add -d myremote s3://mlops-sentiment-analysis-saish
 35. go to root dir and: "docker build -t capstone-app:latest ."
 36. Try running the image: "docker run -p 8888:5000 capstone-app:latest"
     - This run will give 'OSError: capstone_test environment variable is not set'...obviously
-    - alternate: docker run -p 8888:5000 -e CAPSTONE_TEST=fed5090d7b66ee0a53ff807d075e977abf0acba2 capstone-app:latest
+    - alternate: docker run -p 8888:5000 -e CAPSTONE_TEST=c9345c4f480e6f910aa74c772b5615846c75ef22 capstone-app:latest
     - docker push youruser/capstone-app:latest (optional)
     - optional: try to delete image locally and pull it from dockerhub and run (optional)
 
@@ -72,7 +72,7 @@ dvc remote add -d myremote s3://mlops-sentiment-analysis-saish
 	AWS_ACCESS_KEY_ID
 	AWS_SECRET_ACCESS_KEY
 	AWS_REGION
-	ECR_REPOSITORY (capstone-proj)
+	ECR_REPOSITORY (ml-mlops-project)
     AWS_ACCOUNT_ID
    (Also add this permission to the IAM user: AmazonEC2ContainerRegistryFullAccess)
 
