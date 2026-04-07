@@ -95,10 +95,16 @@ PREDICTION_COUNT = Counter(
 # ------------------------------------------------------------------------------------------
 
 
-model_path = os.path.join("models", "model.pkl")
+# Prefer MLflow model if available (Production)
+try:
+    print("Loading model from MLflow Production...")
+    model = mlflow.pyfunc.load_model("models:/my_model/Production")
+except Exception as e:
+    print("MLflow load failed, falling back to local model:", e)
 
-with open(model_path, "rb") as f:
-    model = pickle.load(f)
+    model_path = os.path.join("models", "logistic_model.pkl")
+    with open(model_path, "rb") as f:
+        model = pickle.load(f)
 
 vectorizer_path = os.path.join("models", "vectorizer.pkl")
 with open(vectorizer_path, 'rb') as f:
