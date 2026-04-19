@@ -1,13 +1,13 @@
-# 🚀 Sentiment Analysis with End-to-End MLOps Pipeline
+# Sentiment Analysis with End-to-End MLOps Pipeline
 
-## 📌 Overview
+## Overview
 This project implements a **production-ready end-to-end MLOps pipeline** for sentiment analysis. It automates the complete machine learning lifecycle including data preprocessing, feature engineering, model training, evaluation, tracking, deployment, and CI/CD integration.
 
 The system is designed to be **scalable, reproducible, and deployment-ready**, leveraging modern MLOps tools and cloud infrastructure.
 
 ---
 
-## 🎯 Objective
+## Objective
 - Build a robust sentiment analysis model
 - Compare multiple ML models and select the best-performing one
 - Implement a full MLOps pipeline for automation and reproducibility
@@ -15,7 +15,7 @@ The system is designed to be **scalable, reproducible, and deployment-ready**, l
 
 ---
 
-## 📊 Dataset & Preprocessing
+## Dataset & Preprocessing
 - Text data cleaned using:
   - URL removal
   - Stopword removal
@@ -25,26 +25,26 @@ The system is designed to be **scalable, reproducible, and deployment-ready**, l
 
 ---
 
-## 🤖 Models Used
+## Models Used
 We trained and compared the following models:
 
-- Logistic Regression ✅ (Selected)
+- Logistic Regression (Selected)
 - Support Vector Machine (SVM)
 
 ---
 
-## 📈 Model Performance
+## Model Performance
 
 | Model                  | Accuracy | Precision | Recall | F1 Score |
 |------------------------|----------|----------|--------|----------|
 | Logistic Regression    | **89.39%** | 0.88 | 0.90 | 0.895 |
 | SVM                    | 88.26% | 0.87 | 0.88 | 0.883 |
 
-👉 Logistic Regression was selected as the final production model.
+Logistic Regression was selected as the final production model.
 
 ---
 
-## ⚙️ MLOps Pipeline
+## MLOps Pipeline
 
 ### 🔹 Data Pipeline (DVC)
 - Data preprocessing
@@ -52,7 +52,7 @@ We trained and compared the following models:
 - Model training
 - Model evaluation
 
-👉 Fully reproducible pipeline using **DVC**
+Fully reproducible pipeline using **DVC**
 
 ---
 
@@ -81,7 +81,7 @@ Automated pipeline includes:
 
 ---
 
-## 🌐 API Deployment
+## API Deployment
 
 ### 🔹 Flask Application
 - REST API for sentiment prediction
@@ -102,22 +102,22 @@ Automated pipeline includes:
 
 ---
 
-## 🔄 Local vs Production Setup
+## Local vs Production Setup
 
 The project supports two environments:
 
-### 🧪 Local Development
+### Local Development
 - Loads model from local `.pkl` files
 - Useful for testing and debugging
 
-### 🚀 Production Deployment
+### Production Deployment
 - Loads model from **MLflow Production stage**
 - Ensures latest validated model is used
 - Integrated with DagsHub for remote tracking
 
 ---
 
-## 🧠 Tech Stack
+## Tech Stack
 
 - **Machine Learning:** Scikit-learn  
 - **Data Pipeline:** DVC  
